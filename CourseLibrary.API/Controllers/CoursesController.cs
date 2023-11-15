@@ -34,7 +34,7 @@ public class CoursesController : ControllerBase
         return Ok(_mapper.Map<IEnumerable<CourseDto>>(coursesForAuthorFromRepo));
     }
 
-    [HttpGet("{courseId}")]
+    [HttpGet("{courseId}", Name = "GetCourseForAuther")]
     public async Task<ActionResult<CourseDto>> GetCourseForAuthor(Guid authorId, Guid courseId)
     {
         if (!await _courseLibraryRepository.AuthorExistsAsync(authorId))
@@ -66,7 +66,12 @@ public class CoursesController : ControllerBase
         await _courseLibraryRepository.SaveAsync();
 
         var courseToReturn = _mapper.Map<CourseDto>(courseEntity);
-        return Ok(courseToReturn);
+
+        return CreatedAtRoute("GetCourseForAuther", new
+        {
+            courseId = courseToReturn.Id,
+            authorId
+        }, courseToReturn);
     }
 
 
