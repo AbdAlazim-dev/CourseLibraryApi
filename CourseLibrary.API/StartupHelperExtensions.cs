@@ -1,6 +1,9 @@
 ﻿using CourseLibrary.API.DbContexts;
 using CourseLibrary.API.Services;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json.Serialization;
 
 namespace CourseLibrary.API;
 
@@ -13,7 +16,37 @@ internal static class StartupHelperExtensions
         {
             configure.ReturnHttpNotAcceptable = true;
             
-        }).AddXmlDataContractSerializerFormatters();
+        }).AddNewtonsoftJson(setUpActions =>
+        {
+            setUpActions.SerializerSettings.ContractResolver = new
+            CamelCasePropertyNamesContractResolver();
+        }).AddXmlDataContractSerializerFormatters()
+        .ConfigureApiBehaviorOptions(setUpAction => {
+
+            setUpAction.InvalidModelStateResponseFactory = context =>
+            {
+                var problemDetailsFactory = context.HttpContext.RequestServices
+                .GetRequiredService<ProblemDetailsFactory>();
+
+                var validationProblemsDetails = problemDetailsFactory.CreateValidationProblemDetails(
+                    context.HttpContext,
+                    context.ModelState
+                    );
+                validationProblemsDetails.Detail = "see the error faild for more info";
+                validationProblemsDetails.Instance = context.HttpContext.Request.Path;
+                validationProblemsDetails.Type = "https://localhost:5000/CoureseLibrary/ValidationInputInfo";
+                validationProblemsDetails.Status = StatusCodes.Status422UnprocessableEntity;
+                validationProblemsDetails.Title = "one or more Validation errors eccure.";
+
+                return new UnprocessableEntityObjectResult(
+                    validationProblemsDetails
+                    )
+                {
+                    ContentTypes = { "application/problem+json" }
+                };
+
+            };
+        });
 
         builder.Services.AddScoped<ICourseLibraryRepository, 
             CourseLibraryRepository>();

@@ -1,7 +1,9 @@
 ﻿
 using AutoMapper;
+using CourseLibrary.API.Entities;
 using CourseLibrary.API.Models;
 using CourseLibrary.API.Services;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CourseLibrary.API.Controllers;
@@ -73,12 +75,59 @@ public class CoursesController : ControllerBase
             authorId
         }, courseToReturn);
     }
+    [HttpPatch("{courseId}")]
+    public async Task<IActionResult> UpdatePartOfTheCourse(Guid authorId,
+        Guid courseId,
+        JsonPatchDocument<CourseForUpdateDto> patchDocument)
+    {
+        if(!await _courseLibraryRepository.AuthorExistsAsync(authorId))
+        {
+            return NotFound();
+        }
+
+        var courseEntitiy = await _courseLibraryRepository.GetCourseAsync(authorId , courseId);
+        if(courseEntitiy == null)
+        {
+            var courseDto = new CourseForUpdateDto();
+            patchDocument.ApplyTo(courseDto);
+            var courseToAdd = _mapper.Map<Course>(courseDto);
+
+            _courseLibraryRepository.AddCourse(authorId , courseToAdd);
+            await _courseLibraryRepository.SaveAsync();
+
+            var courseToReturn = _mapper.Map<CourseDto>(courseToAdd);
+
+            return CreatedAtRoute("GetCourseForAuther", new
+            {
+                courseId = courseToReturn.Id,
+                authorId
+            }, courseToReturn);
+        }
+
+        var courseToPatch = _mapper.Map<CourseForUpdateDto>(courseEntitiy);
+
+        patchDocument.ApplyTo(courseToPatch, ModelState);
+
+        if(!TryValidateModel(courseToPatch))
+        {
+            return ValidationProblem(ModelState);
+        }
+
+        _mapper.Map(courseToPatch, courseEntitiy);
+
+        _courseLibraryRepository.UpdateCourse(courseEntitiy);
+
+        await _courseLibraryRepository.SaveAsync();
+
+        return NoContent();
 
 
+
+    }
     [HttpPut("{courseId}")]
     public async Task<IActionResult> UpdateCourseForAuthor(Guid authorId,
       Guid courseId,
-      CourseDto course)
+      CourseForUpdateDto course)
     {
         if (!await _courseLibraryRepository.AuthorExistsAsync(authorId))
         {
@@ -89,7 +138,18 @@ public class CoursesController : ControllerBase
 
         if (courseForAuthorFromRepo == null)
         {
-            return NotFound();
+            var courseToAdd = _mapper.Map<Entities.Course>(course);
+            courseToAdd.Id = courseId;
+            _courseLibraryRepository.AddCourse(authorId, courseToAdd);
+            await _courseLibraryRepository.SaveAsync();
+
+            var courseToReturn = _mapper.Map<CourseDto>(courseToAdd);
+
+            return CreatedAtRoute(
+                "GetCourseForAuther",
+                new { authorId, courseId = courseToReturn.Id },
+                courseToReturn
+                );
         }
 
         _mapper.Map(course, courseForAuthorFromRepo);
