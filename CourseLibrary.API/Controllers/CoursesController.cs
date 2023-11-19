@@ -5,6 +5,9 @@ using CourseLibrary.API.Models;
 using CourseLibrary.API.Services;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.Extensions.Options;
 
 namespace CourseLibrary.API.Controllers;
 
@@ -89,7 +92,13 @@ public class CoursesController : ControllerBase
         if(courseEntitiy == null)
         {
             var courseDto = new CourseForUpdateDto();
-            patchDocument.ApplyTo(courseDto);
+            patchDocument.ApplyTo(courseDto, ModelState);
+
+            if(!TryValidateModel(courseDto))
+            {
+                return ValidationProblem(ModelState);
+            }
+
             var courseToAdd = _mapper.Map<Course>(courseDto);
 
             _courseLibraryRepository.AddCourse(authorId , courseToAdd);
@@ -179,6 +188,14 @@ public class CoursesController : ControllerBase
         await _courseLibraryRepository.SaveAsync();
 
         return NoContent();
+    }
+    public override ActionResult ValidationProblem([ActionResultObjectValue] 
+    ModelStateDictionary modelStateDic)
+    {
+        var options = HttpContext.RequestServices
+            .GetRequiredService<IOptions<ApiBehaviorOptions>>();
+
+        return (ActionResult)options.Value.InvalidModelStateResponseFactory(ControllerContext);    
     }
 
 }
