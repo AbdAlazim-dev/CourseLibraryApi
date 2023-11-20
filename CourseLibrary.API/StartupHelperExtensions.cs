@@ -47,6 +47,8 @@ internal static class StartupHelperExtensions
 
             };
         });
+        builder.Services.AddTransient<IProprtyMappingService,
+            ProprtyMappingService>();
 
         builder.Services.AddScoped<ICourseLibraryRepository, 
             CourseLibraryRepository>();
