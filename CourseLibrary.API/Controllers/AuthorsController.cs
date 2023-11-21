@@ -36,7 +36,7 @@ public class AuthorsController : ControllerBase
     /// <response code="200">return All Authers from the database</response>
     [HttpGet (Name = "GetAuthors")]
     [HttpHead]
-    public async Task<ActionResult<IEnumerable<AuthorDto>>> GetAuthors(
+    public async Task<IActionResult> GetAuthors(
         [FromQuery] AuthorResourseParameters authorResourseParameters)
     {
         //check if the request sort proprty is valid 
@@ -72,7 +72,8 @@ public class AuthorsController : ControllerBase
 
 
         // return them
-        return Ok(_mapper.Map<IEnumerable<AuthorDto>>(authorsFromRepo));
+        return Ok(_mapper.Map<IEnumerable<AuthorDto>>(authorsFromRepo)
+            .ShapeData(authorResourseParameters.Fields));
     }
     private string? CreateAuthorsResourceUri(AuthorResourseParameters autherResourseParameter,
         ResourceUriType type
@@ -84,6 +85,7 @@ public class AuthorsController : ControllerBase
                 return Url.Link("GetAuthors",
                     new 
                     {
+                        fields = autherResourseParameter.Fields,
                         orderBy = autherResourseParameter.OrderBy,
                         PageNumber = autherResourseParameter.PageNumber - 1, 
                         PageSize = autherResourseParameter.PageSize,
@@ -94,6 +96,7 @@ public class AuthorsController : ControllerBase
                 return Url.Link("GetAuthors",
                     new 
                     {
+                        fields = autherResourseParameter.Fields,
                         orderBy = autherResourseParameter.OrderBy,
                         PageNumber = autherResourseParameter.PageNumber + 1,
                         PageSize = autherResourseParameter.PageSize,
@@ -104,6 +107,7 @@ public class AuthorsController : ControllerBase
                 return Url.Link("GetAuthors",
                     new
                     {
+                        fields = autherResourseParameter.Fields,
                         orderBy = autherResourseParameter.OrderBy,
                         PageNumber = autherResourseParameter.PageNumber,
                         PageSize = autherResourseParameter.PageSize,
