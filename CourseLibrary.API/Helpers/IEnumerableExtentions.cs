@@ -41,7 +41,7 @@ public static class IEnumerableExtentions
 
                 if( properyInfo == null ) 
                 {
-                    throw new Exception($"the property {nameof(proprtyName)} is not on {nameof(TSource)}");
+                    throw new Exception($"the property {proprtyName} is not on {typeof(TSource)}");
                 }
 
                 propertyInfoList.Add(properyInfo);

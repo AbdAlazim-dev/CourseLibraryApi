@@ -27,7 +27,7 @@ public class CoursesController : ControllerBase
             throw new ArgumentNullException(nameof(mapper));
     }
 
-    [HttpGet]
+    [HttpGet(Name = "GetCoursesForTheAuthor")]
     public async Task<ActionResult<IEnumerable<CourseDto>>> GetCoursesForAuthor(Guid authorId)
     {
         if (!await _courseLibraryRepository.AuthorExistsAsync(authorId))
@@ -57,7 +57,7 @@ public class CoursesController : ControllerBase
     }
 
 
-    [HttpPost]
+    [HttpPost(Name = "CreateCourse")]
     public async Task<ActionResult<CourseDto>> CreateCourseForAuthor(
             Guid authorId, CourseForCreationDto course)
     {
@@ -72,13 +72,44 @@ public class CoursesController : ControllerBase
 
         var courseToReturn = _mapper.Map<CourseDto>(courseEntity);
 
+
         return CreatedAtRoute("GetCourseForAuther", new
         {
             courseId = courseToReturn.Id,
             authorId
         }, courseToReturn);
     }
-    [HttpPatch("{courseId}")]
+    public IEnumerable<LinkDto> CreateLinksForCourse(Guid courseId)
+    {
+        var links = new List<LinkDto>();
+
+        //include a link to patch the resourse
+        links.Add(
+               new(Url.Link("PartillyUpdateCourse", new { courseId }),
+               "partlly-update-resourse",
+               "patch"
+                ));
+
+        //include a link to put a the resourse
+
+        links.Add(
+       new(Url.Link("FullyUpdateTheCourse", new { courseId }),
+       "update-thefull-resouse",
+       "put"
+        ));
+
+        //link to delete the resourse
+
+        links.Add(
+       new(Url.Link("DeleteCourse", new { courseId }),
+       "delete",
+       "Delete"
+        ));
+
+        //return all links
+        return links;
+    }
+    [HttpPatch("{courseId}", Name = "PartillyUpdateCourse")]
     public async Task<IActionResult> UpdatePartOfTheCourse(Guid authorId,
         Guid courseId,
         JsonPatchDocument<CourseForUpdateDto> patchDocument)
@@ -133,7 +164,7 @@ public class CoursesController : ControllerBase
 
 
     }
-    [HttpPut("{courseId}")]
+    [HttpPut("{courseId}", Name = "FullyUpdateTheCourse")]
     public async Task<IActionResult> UpdateCourseForAuthor(Guid authorId,
       Guid courseId,
       CourseForUpdateDto course)
@@ -169,7 +200,7 @@ public class CoursesController : ControllerBase
         return NoContent();
     }
 
-    [HttpDelete("{courseId}")]
+    [HttpDelete("{courseId}", Name = "DeleteCourse")]
     public async Task<ActionResult> DeleteCourseForAuthor(Guid authorId, Guid courseId)
     {
         if (!await _courseLibraryRepository.AuthorExistsAsync(authorId))

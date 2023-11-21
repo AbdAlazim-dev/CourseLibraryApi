@@ -53,6 +53,9 @@ internal static class StartupHelperExtensions
         builder.Services.AddScoped<ICourseLibraryRepository, 
             CourseLibraryRepository>();
 
+        builder.Services.AddTransient<IPropertyCheckService
+            , PropertyCheckService>();
+
         builder.Services.AddDbContext<CourseLibraryContext>(options =>
         {
             options.UseSqlite(@"Data Source=library.db");
