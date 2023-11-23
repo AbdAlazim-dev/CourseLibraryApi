@@ -13,6 +13,7 @@ public class AuthorsProfile : Profile
                 opt.MapFrom(src => src.DateOfBirth.GetCurrentAge()));
 
         CreateMap<Models.AutherForCreationDto, Entities.Author>();
+        CreateMap<Entities.Author, Models.FullAuthorDto>();
          
     }
 }

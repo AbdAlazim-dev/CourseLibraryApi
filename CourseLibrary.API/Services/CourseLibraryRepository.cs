@@ -144,9 +144,9 @@ public class CourseLibraryRepository : ICourseLibraryRepository
             var mainCategory = autherResourseParameter.MainCategory.Trim();
             collection = collection.Where(a => a.MainCategory == mainCategory);
         }
-        if(!string.IsNullOrWhiteSpace(autherResourseParameter.SearchQurey))
+        if(!string.IsNullOrWhiteSpace(autherResourseParameter.SearchQuery))
         {
-            var searchQurey = autherResourseParameter.SearchQurey.Trim();
+            var searchQurey = autherResourseParameter.SearchQuery.Trim();
 
             collection = collection.Where(a => a.MainCategory.Contains(searchQurey)
             || a.FirstName.Contains(searchQurey)
