@@ -186,6 +186,7 @@ public class AuthorsController : ControllerBase
         "application/vnd.marvin.author.full.hateoas+json",
         "application/vnd.marvin.author.friendly+json",
         "application/vnd.marvin.author.friendly.hateoas+json")]
+
     [HttpGet("{authorId}", Name = "GetAuthor")]
     public async Task<IActionResult> GetAuthor(Guid authorId, string? fields,
         [FromHeader(Name = "Accept")]string? mediaType)

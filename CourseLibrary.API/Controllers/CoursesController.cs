@@ -161,8 +161,6 @@ public class CoursesController : ControllerBase
 
         return NoContent();
 
-
-
     }
     [HttpPut("{courseId}", Name = "FullyUpdateTheCourse")]
     public async Task<IActionResult> UpdateCourseForAuthor(Guid authorId,
