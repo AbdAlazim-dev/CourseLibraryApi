@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Serialization;
+using Microsoft.Extensions.Logging;
 
 namespace CourseLibrary.API;
 
@@ -67,6 +68,8 @@ internal static class StartupHelperExtensions
         builder.Services.AddScoped<ICourseLibraryRepository, 
             CourseLibraryRepository>();
 
+        builder.Services.AddLogging(builder => builder.AddConsole());
+
         builder.Services.AddTransient<IPropertyCheckService
             , PropertyCheckService>();
 
@@ -112,20 +115,14 @@ internal static class StartupHelperExtensions
     {
         using (var scope = app.Services.CreateScope())
         {
-            try
-            {
+
                 var context = scope.ServiceProvider.GetService<CourseLibraryContext>();
                 if (context != null)
                 {
                     await context.Database.EnsureDeletedAsync();
                     await context.Database.MigrateAsync();
                 }
-            }
-            catch (Exception ex)
-            {
-                var logger = scope.ServiceProvider.GetRequiredService<ILogger>();
-                logger.LogError(ex, "An error occurred while migrating the database.");
-            }
-        } 
+
+        }
     }
 }

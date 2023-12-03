@@ -7,7 +7,7 @@ public static class ObjectExtention
 {
     public static ExpandoObject ShapeData<TSource>(
         this TSource source,
-        string fields)
+        string? fields)
     {
         if(source == null)
         {
