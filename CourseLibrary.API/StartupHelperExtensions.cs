@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Serialization;
 using Microsoft.Extensions.Logging;
+using Marvin.Cache.Headers;
 
 namespace CourseLibrary.API;
 
@@ -69,6 +70,17 @@ internal static class StartupHelperExtensions
 
         builder.Services.AddScoped<ICourseLibraryRepository, 
             CourseLibraryRepository>();
+        
+        builder.Services.AddHttpCacheHeaders((expirationModelOptionsAction) =>
+        {
+            expirationModelOptionsAction.MaxAge = 120;
+            expirationModelOptionsAction.CacheLocation =
+                Marvin.Cache.Headers.CacheLocation.Private;
+        },
+        (ValidationModelOptions) =>
+        {
+            ValidationModelOptions.MustRevalidate = true;
+        });
 
         builder.Services.AddLogging(builder => builder.AddConsole());
 
@@ -109,6 +121,8 @@ internal static class StartupHelperExtensions
         }
 
         app.UseResponseCaching();
+
+        app.UseHttpCacheHeaders();
  
         app.UseAuthorization();
 
